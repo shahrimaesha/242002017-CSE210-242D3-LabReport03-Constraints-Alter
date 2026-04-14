@@ -1,0 +1,92 @@
+DROP DATABASE IF EXISTS university_join_lab;
+CREATE DATABASE university_join_lab;
+USE university_join_lab;
+
+CREATE TABLE DEPARTMENT (
+DeptID INT PRIMARY KEY AUTO_INCREMENT,
+DeptName VARCHAR(100) NOT NULL UNIQUE,
+Building VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE STUDENT (
+StudentID INT PRIMARY KEY AUTO_INCREMENT,
+FullName VARCHAR(100) NOT NULL,
+DeptID INT,
+Batch VARCHAR(10) NOT NULL,
+CGPA DECIMAL(3,2),
+FOREIGN KEY (DeptID) REFERENCES DEPARTMENT(DeptID)
+);
+
+CREATE TABLE COURSE (
+CourseID INT PRIMARY KEY AUTO_INCREMENT,
+CourseTitle VARCHAR(100) NOT NULL,
+Credit INT CHECK(Credit > 0),
+DeptID INT,
+FOREIGN KEY (DeptID) REFERENCES DEPARTMENT(DeptID)
+);
+
+CREATE TABLE ENROLLMENT (
+EnrollID INT PRIMARY KEY AUTO_INCREMENT,
+StudentID INT,
+CourseID INT,
+Semester VARCHAR(20) NOT NULL,
+Marks INT CHECK(Marks >= 0 AND Marks <= 100),
+FOREIGN KEY (StudentID) REFERENCES STUDENT(StudentID),
+FOREIGN KEY (CourseID) REFERENCES COURSE(CourseID)
+);
+
+INSERT INTO DEPARTMENT (DeptName, Building) VALUES
+('Computer Science', 'Annex 1'),
+('Electrical Engineering', 'Annex 2'),
+('Business Admin', 'Main Hall'),
+('Mathematics', 'Old Wing');
+
+INSERT INTO STUDENT (FullName, DeptID, Batch, CGPA) VALUES
+('Samiur Rahman', 1, '2024', 3.80),
+('Anika Tabassum', 1, '2024', 3.92),
+('Sajid Hasan', 2, '2023', 3.50),
+('Farhan Ahmed', 3, '2023', 3.20),
+('Sara Islam', 1, '2024', 3.75),
+('Tanvir Karim', 4, '2022', 3.60),
+('Mehreen Kaur', 2, '2023', 3.85),
+('Noor Mohammad', NULL, '2025', 0.00);
+
+INSERT INTO COURSE (CourseTitle, Credit, DeptID) VALUES
+('Database Systems', 3, 1),
+('Algorithms', 3, 1),
+('Circuit Analysis', 4, 2),
+('Marketing 101', 3, 3),
+('Calculus', 4, 4),
+('Quantum Physics', 3, 2);
+
+INSERT INTO ENROLLMENT (StudentID, CourseID, Semester, Marks) VALUES
+(1, 1, 'Fall 2024', 85), (1, 2, 'Fall 2024', 78),
+(2, 1, 'Fall 2024', 92), (2, 2, 'Fall 2024', 88),
+(3, 3, 'Spring 2024', 65), (3, 5, 'Spring 2024', 72),
+(4, 4, 'Summer 2024', 82), (5, 1, 'Fall 2024', 55),
+(5, 2, 'Fall 2024', 62), (6, 5, 'Spring 2024', 95),
+(7, 3, 'Spring 2024', 77), (7, 6, 'Spring 2024', 81);
+
+SELECT S.FullName, D.DeptName FROM STUDENT S INNER JOIN DEPARTMENT D ON S.DeptID = D.DeptID;
+
+SELECT S.FullName, C.CourseTitle, E.Semester, E.Marks FROM ENROLLMENT E INNER JOIN STUDENT S ON E.StudentID = S.StudentID INNER JOIN COURSE C ON E.CourseID = C.CourseID;
+
+SELECT S.FullName, E.CourseID FROM STUDENT S LEFT JOIN ENROLLMENT E ON S.StudentID = E.StudentID;
+
+SELECT C.CourseTitle, E.StudentID FROM COURSE C LEFT JOIN ENROLLMENT E ON C.CourseID = E.CourseID;
+
+SELECT D.DeptName, COUNT(S.StudentID) AS TotalStudents FROM DEPARTMENT D LEFT JOIN STUDENT S ON D.DeptID = S.DeptID GROUP BY D.DeptName;
+
+SELECT C.CourseTitle, COUNT(E.EnrollID) AS EnrolledCount FROM COURSE C LEFT JOIN ENROLLMENT E ON C.CourseID = E.CourseID GROUP BY C.CourseTitle;
+
+SELECT C.CourseTitle, AVG(E.Marks) AS AvgMarks, MAX(E.Marks) AS MaxMarks, MIN(E.Marks) AS MinMarks FROM COURSE C INNER JOIN ENROLLMENT E ON C.CourseID = E.CourseID GROUP BY C.CourseTitle;
+
+SELECT S.FullName, COUNT(E.CourseID) AS TotalCourses, AVG(E.Marks) AS AvgMarks FROM STUDENT S LEFT JOIN ENROLLMENT E ON S.StudentID = E.StudentID GROUP BY S.StudentID, S.FullName;
+
+SELECT S.FullName, AVG(E.Marks) AS AverageMarks FROM STUDENT S JOIN ENROLLMENT E ON S.StudentID = E.StudentID GROUP BY S.StudentID, S.FullName ORDER BY AverageMarks DESC LIMIT 3;
+
+SELECT D.DeptName, COUNT(S.StudentID) AS StudentCount FROM DEPARTMENT D JOIN STUDENT S ON D.DeptID = S.DeptID GROUP BY D.DeptName HAVING StudentCount > 2;
+
+SELECT DISTINCT S.FullName, E.Marks FROM STUDENT S JOIN ENROLLMENT E ON S.StudentID = E.StudentID WHERE E.Marks BETWEEN 60 AND 85;
+
+SELECT FullName FROM STUDENT WHERE FullName LIKE 'S%' OR FullName LIKE '%a%';
